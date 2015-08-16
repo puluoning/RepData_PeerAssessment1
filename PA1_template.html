@@ -115,10 +115,8 @@ abline(v=max_steps_interval, lty=2,lwd=2)</code></pre>
 <pre class="r"><code>numofMissingData &lt;- sum(is.na(data$steps))
 mergedData &lt;- merge(data, pack_sum_2, by=&quot;interval&quot;)
 filled_data &lt;- mergedData[with(mergedData, order(date, interval)),]
-filled_data$steps[is.na(data$steps)] &lt;- filled_data$avg_steps</code></pre>
-<pre><code>## Warning in filled_data$steps[is.na(data$steps)] &lt;- filled_data$avg_steps:
-## number of items to replace is not a multiple of replacement length</code></pre>
-<pre class="r"><code>new_data &lt;- select(filled_data,-avg_steps)
+filled_data$steps[is.na(data$steps)] &lt;- filled_data$avg_steps[is.na(data$steps)]
+new_data &lt;- select(filled_data,-avg_steps)
 new_data &lt;- group_by(new_data, date)
 pack_sum_3 &lt;- summarize(new_data, total_steps = sum(steps, na.rm=TRUE))
 meanSteps_2 = mean(pack_sum_1$total_steps)

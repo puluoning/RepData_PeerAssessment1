@@ -95,15 +95,7 @@ To fill in the missing data, I use the average steps for each interval. To do th
 numofMissingData <- sum(is.na(data$steps))
 mergedData <- merge(data, pack_sum_2, by="interval")
 filled_data <- mergedData[with(mergedData, order(date, interval)),]
-filled_data$steps[is.na(data$steps)] <- filled_data$avg_steps
-```
-
-```
-## Warning in filled_data$steps[is.na(data$steps)] <- filled_data$avg_steps:
-## number of items to replace is not a multiple of replacement length
-```
-
-```r
+filled_data$steps[is.na(data$steps)] <- filled_data$avg_steps[is.na(data$steps)]
 new_data <- select(filled_data,-avg_steps)
 new_data <- group_by(new_data, date)
 pack_sum_3 <- summarize(new_data, total_steps = sum(steps, na.rm=TRUE))
