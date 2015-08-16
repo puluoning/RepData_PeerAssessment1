@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 Complete the entire assignment in a single R markdown document that can be processed by knitr and be transformed into an HTML file.
 
 **Step 1: Load the raw data.**  
@@ -12,8 +7,25 @@ Show any code that is needed to
 2. Process/transform the data (if necessary) into a format suitable for your analysis  
 
 Make sure the raw data is in the same folder of the code.  
-```{r Load_data, echo =TRUE}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 library(lubridate)
 fileName <- "activity.csv"
 rawData <- read.csv(fileName,header = TRUE,na.strings = "NA",stringsAsFactors = FALSE)
@@ -33,7 +45,8 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 First, group the data by date; Second, summarize the data based on the date when the data is taken. Then plot histogram of the steps over time
 
-```{r step distribution per day, echo=TRUE}
+
+```r
 data_1 <- group_by(data, date)
 pack_sum_1 <- summarize(data_1, total_steps = sum(steps, na.rm=TRUE))
 meanSteps = mean(pack_sum_1$total_steps)
@@ -43,13 +56,16 @@ hist(pack_sum_1$total_steps,main="Histogram of total steps per day",
      ylab = "Frequency")
 ```
 
-The mean steps per day is `r meanSteps`, and the median steps per day is `r medianSteps`.
+![](PA1_template_files/figure-html/step distribution per day-1.png) 
+
+The mean steps per day is 9354.2295082, and the median steps per day is 10395.
 
 **Step 3: What is the average daily activity pattern?**  
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)  
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?  
 
-``` {r Average Daily activity pattern, echo=TRUE}
+
+```r
 data_2 <- group_by(data, interval)
 pack_sum_2 <- summarize(data_2, avg_steps = mean(steps, na.rm=TRUE))
 with(pack_sum_2, plot(interval, avg_steps, type='l', xlab="Time in a day",ylab="Average Steps", main="Average daily acitivity pattern"))
@@ -59,10 +75,11 @@ if (max_steps_interval%/%100 < 12)
         noon <- "morning" else 
         noon <- "afternoon"
 abline(v=max_steps_interval, lty=2,lwd=2)
-
 ```
 
-The time which contains the maximum number of steps is `r time_max_step` in the `r noon`.
+![](PA1_template_files/figure-html/Average Daily activity pattern-1.png) 
+
+The time which contains the maximum number of steps is 8:35 in the morning.
 
 **Step 4: Imputing missing values**  
 Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.  
@@ -73,11 +90,20 @@ Note that there are a number of days/intervals where there are missing values (c
 
 To fill in the missing data, I use the average steps for each interval. To do that, I merge the "data" and "pack_sum_2" so that it can automatically fill in the NAs. Before I fill the data, however, I need to make sure it is sorted correctly
 
-``` {r Work with missing valus, echo=TRUE}
+
+```r
 numofMissingData <- sum(is.na(data$steps))
 mergedData <- merge(data, pack_sum_2, by="interval")
 filled_data <- mergedData[with(mergedData, order(date, interval)),]
 filled_data$steps[is.na(data$steps)] <- filled_data$avg_steps
+```
+
+```
+## Warning in filled_data$steps[is.na(data$steps)] <- filled_data$avg_steps:
+## number of items to replace is not a multiple of replacement length
+```
+
+```r
 new_data <- select(filled_data,-avg_steps)
 new_data <- group_by(new_data, date)
 pack_sum_3 <- summarize(new_data, total_steps = sum(steps, na.rm=TRUE))
@@ -94,19 +120,20 @@ if (meanStepChange == "changed" | medianStepChange == "changed") {impact = ""
 hist(pack_sum_3$total_steps,main="Histogram of total steps per day for new data",
      xlab = "Total number of steps taken per day",
      ylab = "Frequency")
-
 ```
 
-There are `r numofMissingData` missing testing point in this dataset.  
-For the new data, the mean steps per day is `r meanSteps_2`, and the median steps per day is `r medianSteps_2`. The mean step is `r meanStepChange` and the median step is `r medianStepChange`. There is `r impact` impact of inputing missing data.
+![](PA1_template_files/figure-html/Work with missing valus-1.png) 
+
+There are 2304 missing testing point in this dataset.  
+For the new data, the mean steps per day is 9354.2295082, and the median steps per day is 10395. The mean step is unchanged and the median step is unchanged. There is NO impact of inputing missing data.
 
 **Step 5: Are there differences in activity patterns between weekdays and weekends?**  
 For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.  
 1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.  
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
-``` {r Weekday pattern and weekend pattern, echo=TRUE}
 
+```r
 wkData <- data %>%
         mutate(week = ifelse (weekdays(date) == "Saturday"|weekdays(date) == "Sunday",
                               "weekend", "weekday"))
@@ -116,4 +143,6 @@ pack_sum_4 <- summarize(by_weekday_interval,avg_steps = mean(steps, na.rm = TRUE
 library(lattice)
 xyplot(avg_steps ~ interval | week, pack_sum_4, type = "l",layout=c(1,2),xlab="Time in a day", ylab="Average Steps")
 ```
+
+![](PA1_template_files/figure-html/Weekday pattern and weekend pattern-1.png) 
 
